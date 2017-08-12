@@ -21,7 +21,16 @@ namespace fms {
 			{
 				return *this != e;
 			}
+			E end() const
+			{
+				return e;
+			}
 		};
+		template<class I, class E>
+		inline E end(const iterator<I>& i)
+		{
+			return i.end();
+		}
 		template<class I, class E>
 		inline auto make_iterator(I i, E e)
 		{
@@ -32,7 +41,46 @@ namespace fms {
 		{
 			return make_iterator(c.begin(), c.end());
 		}
+#ifdef _DEBUG
+#include <vector>
+		inline void iterator_test()
+		{
+			std::vector<int> v{1,2,3};
+			{
+				auto i = fms::sequence::make_iterator(v.begin(), v.end());
+				auto i2(i);
+				i = i2;
+				ensure (i == i2);
+				ensure (*i == 1);
+				ensure (*++i == 2);
+				ensure (*i++ == 2);
+				ensure (*i == 3);
+				ensure (i);
+				++i;
+				ensure (!i);
+				std::advance(i, -1);
+				ensure (i);
+				ensure (*i == 3);
+			}
+			{
+				auto i = fms::sequence::make_iterator(v);
+				auto i2(i);
+				i = i2;
+				ensure (i == i2);
+				ensure (*i == 1);
+				ensure (*++i == 2);
+				ensure (*i++ == 2);
+				ensure (*i == 3);
+				ensure (i);
+				++i;
+				ensure (!i);
+				std::advance(i, -1);
+				ensure (i);
+				ensure (*i == 3);
+			}
+		}
 	}
+#endif // _DEBUG
 
 	template<class S>
 	inline S end(S s)
