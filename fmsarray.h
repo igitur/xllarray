@@ -10,6 +10,7 @@
 namespace fms {
 
 	namespace sequence {
+		// iterator with end
 		template<class I, class E>
 		class iterator : public I {
 			E e;
@@ -17,9 +18,26 @@ namespace fms {
 			iterator(I i, E e)
 				: I(i), e(e)
 			{ }
+			bool operator==(const iterator& i) const
+			{
+				return I::operator==(i) && e == i.end();
+			}
+			bool operator!=(const iterator& i) const
+			{
+				return !operator==(i);
+			}
+			// handy but a good idea?
+			bool operator==(const I& i) const
+			{
+				return I::operator==(i);
+			}
+			bool operator!=(const I& i) const
+			{
+				return !operator==(i);
+			}
 			operator bool() const
 			{
-				return *this != e;
+				return I::operator!=(e);
 			}
 			E end() const
 			{
@@ -27,7 +45,7 @@ namespace fms {
 			}
 		};
 		template<class I, class E>
-		inline E end(const iterator<I>& i)
+		inline E end(const iterator<I,E>& i)
 		{
 			return i.end();
 		}
@@ -36,6 +54,7 @@ namespace fms {
 		{
 			return iterator<I,E>(i, e);
 		}
+		// poor man's range
 		template<class C>
 		inline auto make_iterator(const C& c)
 		{
@@ -47,7 +66,7 @@ namespace fms {
 		{
 			std::vector<int> v{1,2,3};
 			{
-				auto i = fms::sequence::make_iterator(v.begin(), v.end());
+				auto i = make_iterator(v.begin(), v.end());
 				auto i2(i);
 				i = i2;
 				ensure (i == i2);
@@ -63,7 +82,7 @@ namespace fms {
 				ensure (*i == 3);
 			}
 			{
-				auto i = fms::sequence::make_iterator(v);
+				auto i = make_iterator(v);
 				auto i2(i);
 				i = i2;
 				ensure (i == i2);
@@ -78,8 +97,22 @@ namespace fms {
 				ensure (i);
 				ensure (*i == 3);
 			}
+			{
+				auto i = make_iterator(v.begin(), v.end());
+				ensure (i == i);
+				ensure (!(i != i));
+				auto i_ = make_iterator(v.begin(), --v.end());
+				ensure (i != i_);
+				ensure (!( i == i_));
+				ensure (i.end() == end(i));
+				ensure (end(i) != i_.end());
+			}
+			{
+				auto i = make_iterator(v);
+				i += v.size();
+				ensure (i == i.end());
+			}
 		}
-	}
 #endif // _DEBUG
 
 	template<class S>
@@ -189,5 +222,5 @@ namespace fms {
 		}
 	};
 
-
+	}
 } // namespace fms
